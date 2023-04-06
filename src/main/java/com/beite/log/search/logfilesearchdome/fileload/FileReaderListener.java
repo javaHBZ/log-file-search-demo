@@ -1,5 +1,6 @@
 package com.beite.log.search.logfilesearchdome.fileload;
 
+import com.beite.log.search.logfilesearchdome.resolver.LogEntryResolver;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -190,6 +191,9 @@ public class FileReaderListener implements InitializingBean {
                     str.append("Line").append(currentLineNumber.get()).append("\t");
                     str.append(new String(line.getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8));
                     currentLineNumber.set(currentLineNumber.incrementAndGet());
+
+                    // 通过解析器进行解析
+                    LogEntryResolver.resolverLine(new String(line.getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8));
                 }
                 return file.getFilePointer();
             } catch (IOException e) {

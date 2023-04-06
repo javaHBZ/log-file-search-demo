@@ -1,5 +1,5 @@
 log:
-  log-path: /Volumes/工作/工作/项目/Huasun_DaLi/Huasun_DaLiUnit_mes_backend/log
+  log-path: C:\project\hs_mes\log
 
 spring:
   cache:

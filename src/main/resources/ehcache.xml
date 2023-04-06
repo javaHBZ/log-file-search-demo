@@ -1,4 +1,9 @@
-<ehcache>
+<?xml version="1.0" encoding="UTF-8"?>
+<ehcache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="http://www.ehcache.org/ehcache.xsd"
+         updateCheck="false"
+         monitoring="autodetect"
+         dynamicConfig="true">
 <!--    name:缓存名称。
 maxElementsInMemory：缓存最大个数。
 eternal:对象是否永久有效，一但设置了，timeout将不起作用。
@@ -12,13 +17,36 @@ diskExpiryThreadIntervalSeconds：磁盘失效线程运行时间间隔，默认�
 memoryStoreEvictionPolicy：当达到maxElementsInMemory限制时，Ehcache将会根据指定的策略去清理内存。默认策略是LRU（最近最少使用）。你可以设置为FIFO（先进先出）或是LFU（较少使用）。
 clearOnFlush：内存数量最大时是否清除。
 diskStore 则表示临时缓存的硬盘目录。。-->
-    <defaultCache
+    <cache
+            name ='fileDateCache'
             maxElementsInMemory="10000"
             eternal="false"
             timeToIdleSeconds="120"
             timeToLiveSeconds="120"
-            overflowToDisk="false"
-            diskPersistent="false"
+            overflowToDisk="true"
+            diskPersistent="true"
+            diskExpiryThreadIntervalSeconds="120"
+    />
+
+    <cache
+            name ='fileTimeCache'
+            maxElementsInMemory="10000"
+            eternal="false"
+            timeToIdleSeconds="120"
+            timeToLiveSeconds="120"
+            overflowToDisk="true"
+            diskPersistent="true"
+            diskExpiryThreadIntervalSeconds="120"
+    />
+
+    <cache
+            name ='fileLevelCache'
+            maxElementsInMemory="10000"
+            eternal="false"
+            timeToIdleSeconds="120"
+            timeToLiveSeconds="120"
+            overflowToDisk="true"
+            diskPersistent="true"
             diskExpiryThreadIntervalSeconds="120"
     />
 </ehcache>
