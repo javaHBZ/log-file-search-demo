@@ -1,12 +1,16 @@
 package com.beite.log.search.logfilesearchdome.model;
 
+import java.io.Serializable;
+
 /**
  * @author beite_he[beite_he@insightfo.cn]
  * @author <a href="mailto:beite_he@insightfo.cn">Beite</a>
  * @date 2023年04月07日 0:40
  * @since 1.0
  */
-public class LogEntry {
+public class LogEntry implements Serializable {
+    private static final long serialVersionUID = -6849794470754669918L;
+
     private static int nextId = 0; // 日志项ID自增值
 
     /**
@@ -30,6 +34,11 @@ public class LogEntry {
     private String time;
 
     /**
+     * 日期时间
+     */
+    private String dateTime;
+
+    /**
      * 日志级别
      */
     private String level;
@@ -44,10 +53,11 @@ public class LogEntry {
      */
     private String message;
 
-    public LogEntry(String date, String time, String level, String fullyQualifiedClassName, String message) {
+    public LogEntry(String date, String time,String dateTime, String level, String fullyQualifiedClassName, String message) {
         this.id = nextId++;
         this.date = date;
         this.time = time;
+        this.dateTime = dateTime;
         this.level = level;
         this.fullyQualifiedClassName = fullyQualifiedClassName;
         this.message = message;
@@ -102,6 +112,14 @@ public class LogEntry {
 
     public void setTime(String time) {
         this.time = time;
+    }
+
+    public String getDateTime() {
+        return dateTime;
+    }
+
+    public void setDateTime(String dateTime) {
+        this.dateTime = dateTime;
     }
 
     public String getLevel() {

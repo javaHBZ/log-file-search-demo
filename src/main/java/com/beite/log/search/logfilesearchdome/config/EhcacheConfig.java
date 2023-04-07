@@ -2,7 +2,6 @@ package com.beite.log.search.logfilesearchdome.config;
 
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheManager;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,12 +21,12 @@ public class EhcacheConfig {
     }
 
     @Bean
-    public Cache fileTimeCache(@Qualifier("ehCacheCacheManager") CacheManager ehCacheCacheManager) {
-        return ehCacheCacheManager.getCache("fileDateCache");
+    public Cache fileDateTimeCache(@Qualifier("ehCacheCacheManager") CacheManager ehCacheCacheManager) {
+        return ehCacheCacheManager.getCache("fileDateTimeCache");
     }
 
     @Bean
     public Cache fileLevelCache(@Qualifier("ehCacheCacheManager") CacheManager ehCacheCacheManager) {
-        return ehCacheCacheManager.getCache("fileDateCache");
+        return ehCacheCacheManager.getCache("fileLevelCache");
     }
 }

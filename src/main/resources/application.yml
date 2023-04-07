@@ -1,8 +1,12 @@
+#log:
+#  log-path: C:\project\hs_mes\log
 log:
-  log-path: C:\project\hs_mes\log
+  log-path: /Volumes/工作/工作/项目/hs-mes-backend/C:/project/hs_mes/log
 
 spring:
   cache:
     ehcache:
       config: classpath:ehcache.xml
     type: ehcache
+
+debug: true

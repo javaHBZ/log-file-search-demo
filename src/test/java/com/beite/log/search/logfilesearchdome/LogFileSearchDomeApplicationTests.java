@@ -1,6 +1,5 @@
 package com.beite.log.search.logfilesearchdome;
 
-import com.beite.log.search.logfilesearchdome.util.DateUtil;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 

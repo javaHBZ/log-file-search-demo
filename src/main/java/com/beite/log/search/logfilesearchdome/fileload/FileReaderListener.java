@@ -114,7 +114,7 @@ public class FileReaderListener implements InitializingBean {
         public void run() {
             try {
                 watcherLog(this.filePath, this.fileName, str -> {
-                    System.out.println("文件路径:" + filePath + "文件名称:" + fileName + "最新监听值:" + str);
+                    //System.out.println("文件路径:" + filePath + "文件名称:" + fileName + "最新监听值:" + str);
                 });
             } catch (IOException | InterruptedException e) {
                 e.printStackTrace();

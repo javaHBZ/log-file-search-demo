@@ -19,8 +19,8 @@ clearOnFlush：内存数量最大时是否清除。
 diskStore 则表示临时缓存的硬盘目录。。-->
     <cache
             name ='fileDateCache'
-            maxElementsInMemory="10000"
-            eternal="false"
+            maxElementsInMemory="100000"
+            eternal="true"
             timeToIdleSeconds="120"
             timeToLiveSeconds="120"
             overflowToDisk="true"
@@ -29,9 +29,9 @@ diskStore 则表示临时缓存的硬盘目录。。-->
     />
 
     <cache
-            name ='fileTimeCache'
-            maxElementsInMemory="10000"
-            eternal="false"
+            name ='fileDateTimeCache'
+            maxElementsInMemory="100000"
+            eternal="true"
             timeToIdleSeconds="120"
             timeToLiveSeconds="120"
             overflowToDisk="true"
@@ -41,8 +41,8 @@ diskStore 则表示临时缓存的硬盘目录。。-->
 
     <cache
             name ='fileLevelCache'
-            maxElementsInMemory="10000"
-            eternal="false"
+            maxElementsInMemory="100000"
+            eternal="true"
             timeToIdleSeconds="120"
             timeToLiveSeconds="120"
             overflowToDisk="true"
