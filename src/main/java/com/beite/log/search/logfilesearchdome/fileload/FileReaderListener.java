@@ -1,7 +1,12 @@
 package com.beite.log.search.logfilesearchdome.fileload;
 
+import com.beite.log.search.logfilesearchdome.config.websocket.handler.LogFileHandler;
 import com.beite.log.search.logfilesearchdome.resolver.LogEntryResolver;
+import org.apache.commons.text.StringEscapeUtils;
+import org.ehcache.Cache;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -43,6 +48,23 @@ public class FileReaderListener implements InitializingBean {
      */
     private static final Set<String> FILE_PATH_STORAGE = Collections.synchronizedSet(new HashSet<>());
 
+
+    /**
+     * 文件偏移量缓存
+     */
+    public static Cache<String, Long> FILE_OFFSET_CACHE;
+
+    /**
+     * socket处理器
+     */
+    private static LogFileHandler LOG_FILE_HANDLER;
+
+    public FileReaderListener(Cache<String, Long> fileOffsetCache,
+                              LogFileHandler logFileHandler) {
+        FILE_OFFSET_CACHE = fileOffsetCache;
+        LOG_FILE_HANDLER = logFileHandler;
+    }
+
     /**
      * 每天的12点05分刷新一下日志文件的监控,因为新的一天会产生新的日志文件
      */
@@ -52,7 +74,7 @@ public class FileReaderListener implements InitializingBean {
     }
 
     @Override
-    public void afterPropertiesSet(){
+    public void afterPropertiesSet() {
         File loadMainFile = new File(filePath);
         String[] files = loadMainFile.list();
         if (files != null) {
@@ -115,6 +137,12 @@ public class FileReaderListener implements InitializingBean {
             try {
                 watcherLog(this.filePath, this.fileName, str -> {
                     //System.out.println("文件路径:" + filePath + "文件名称:" + fileName + "最新监听值:" + str);
+                    try {
+                        String escapedMessage = StringEscapeUtils.escapeHtml4(str);
+                        FileReaderListener.LOG_FILE_HANDLER.sendMessageToAllClient(escapedMessage);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
                 });
             } catch (IOException | InterruptedException e) {
                 e.printStackTrace();
@@ -123,6 +151,7 @@ public class FileReaderListener implements InitializingBean {
 
         /**
          * 监控文件
+         *
          * @param filePath 文件路径
          * @param fileName 文件名称
          * @param consumer 最新的监听值
@@ -132,8 +161,6 @@ public class FileReaderListener implements InitializingBean {
 
             Paths.get(filePath).register(watchService, StandardWatchEventKinds.ENTRY_CREATE,
                     StandardWatchEventKinds.ENTRY_MODIFY, StandardWatchEventKinds.ENTRY_DELETE);
-            // 文件读取偏移量
-            AtomicLong lastPointer = new AtomicLong(0L);
 
             do {
                 WatchKey key = watchService.take();
@@ -149,8 +176,14 @@ public class FileReaderListener implements InitializingBean {
 
                     File configFile = Paths.get(filePath + "/" + i.context()).toFile();
                     StringBuilder str = new StringBuilder();
+
+                    // 判断缓存是否已经这个文件的偏移量 如果不存在则设置为0
+                    if (FileReaderListener.FILE_OFFSET_CACHE.get(filePath + fileName) == null) {
+                        FileReaderListener.FILE_OFFSET_CACHE.put(filePath + fileName, 0L);
+                    }
                     // 读取文件
-                    lastPointer.set(getFileContent(configFile, lastPointer.get(), str));
+                    FileReaderListener.FILE_OFFSET_CACHE.put(filePath + fileName, getFileContent(configFile, FileReaderListener.FILE_OFFSET_CACHE.get(filePath + fileName), str));
+                    System.out.println("当前文件的偏移量为===>:" + FileReaderListener.FILE_OFFSET_CACHE.get(filePath + fileName));
 
                     if (str.length() != 0) {
                         consumer.accept(str.toString());
@@ -158,7 +191,6 @@ public class FileReaderListener implements InitializingBean {
                 });
                 key.reset();
             } while (true);
-
         }
 
         /**
@@ -193,7 +225,7 @@ public class FileReaderListener implements InitializingBean {
                     currentLineNumber.set(currentLineNumber.incrementAndGet());
 
                     // 通过解析器进行解析
-                    LogEntryResolver.resolverLine(new String(line.getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8));
+                    LogEntryResolver.resolverLine(this.filePath, this.fileName,new String(line.getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8));
                 }
                 return file.getFilePointer();
             } catch (IOException e) {

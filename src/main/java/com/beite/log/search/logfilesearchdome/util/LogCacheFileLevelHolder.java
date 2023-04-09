@@ -1,8 +1,7 @@
 package com.beite.log.search.logfilesearchdome.util;
 
 import com.beite.log.search.logfilesearchdome.model.LogEntry;
-import net.sf.ehcache.Cache;
-import net.sf.ehcache.Element;
+import org.ehcache.Cache;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -18,46 +17,43 @@ import java.util.regex.Pattern;
 @Component
 public class LogCacheFileLevelHolder implements LogCacheHolder {
 
-    private final Cache fileLevelCache;
+    private final Cache<String, LogEntry> fileLevelCache;
 
-    public LogCacheFileLevelHolder(Cache fileLevelCache) {
+    private static String MAX_KEY;
+
+    public LogCacheFileLevelHolder(Cache<String, LogEntry> fileLevelCache) {
         this.fileLevelCache = fileLevelCache;
     }
 
     @Override
     public void putCache(String level, LogEntry logEntry) {
-        this.fileLevelCache.put(new Element(level + "_" + logEntry.getId(), logEntry));
+        this.fileLevelCache.put(level + "_" + logEntry.getId(), logEntry);
+        MAX_KEY = level + "_" + logEntry.getId();
     }
 
     @Override
     public void removeCache(String level) {
-        Pattern pattern = Pattern.compile("^" + level + "_.*");
-        for (Object key : this.fileLevelCache.getKeys()) {
-            if (pattern.matcher(key.toString()).matches()) {
-                this.fileLevelCache.remove(key);
-            }
-        }
+
     }
 
     @Override
-    public List<LogEntry> geCache(String level) {
+    public List<LogEntry> getCache(String level) {
         List<LogEntry> searchLogEntry = new ArrayList<>();
-        Pattern pattern = Pattern.compile("^" + level + "_.*");
-        for (Object key : this.fileLevelCache.getKeys()) {
-            if (pattern.matcher(key.toString()).matches()) {
-                Element element = this.fileLevelCache.get(key);
-                if (element != null) {
-                    searchLogEntry.add((LogEntry) element.getObjectValue());
-                }
+        for (Cache.Entry<String, LogEntry> next : this.fileLevelCache) {
+            if (level.equals(next.getValue().getLevel())) {
+                searchLogEntry.add(next.getValue());
             }
         }
         return searchLogEntry;
     }
 
     @Override
+    public List<LogEntry> getCacheRange(String leftBoundaryValue, String rightBoundaryValue) {
+        return null;
+    }
+
+    @Override
     public LogEntry getLatestCache() {
-        List<String> keysWithExpiryCheck = (List<String>) this.fileLevelCache.getKeysWithExpiryCheck();
-        String lastKey = keysWithExpiryCheck.get(keysWithExpiryCheck.size() - 1);
-        return (LogEntry) this.fileLevelCache.get(lastKey).getObjectValue();
+        return this.fileLevelCache.get(MAX_KEY);
     }
 }

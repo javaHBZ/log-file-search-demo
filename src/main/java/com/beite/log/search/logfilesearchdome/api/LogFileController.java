@@ -27,17 +27,24 @@ public class LogFileController {
 
     @GetMapping("/search_date")
     public List<LogEntry> searchByDate(@RequestParam("date") String date) {
-        List<LogEntry> logEntries = ehcacheBuild.buildLogCacheHolder(LogCacheFileDateHolder.class).geCache(date);
-        logEntries.sort(Comparator.comparingInt(LogEntry::getId));
+        List<LogEntry> logEntries = ehcacheBuild.buildLogCacheHolder(LogCacheFileDateHolder.class).getCache(date);
+        logEntries.sort(Comparator.comparingLong(LogEntry::getId));
         return logEntries;
     }
 
     @GetMapping("/search_date_time")
     public List<LogEntry> searchByDateTime(@RequestParam("dateTime") String dateTime) {
-        List<LogEntry> logEntries = ehcacheBuild.buildLogCacheHolder(LogCacheFileDateTimeHolder.class).geCache(dateTime);
-        logEntries.sort(Comparator.comparingInt(LogEntry::getId));
+        List<LogEntry> logEntries = ehcacheBuild.buildLogCacheHolder(LogCacheFileDateTimeHolder.class).getCache(dateTime);
+        logEntries.sort(Comparator.comparingLong(LogEntry::getId));
         return logEntries;
     }
 
+    @GetMapping("/search_date_time_range")
+    public List<LogEntry> searchByDateTime(@RequestParam("dateTimeStart") String dateTimeStart,
+                                           @RequestParam("dateTimeEnd") String dateTimeEnd) {
+        List<LogEntry> logEntries = ehcacheBuild.buildLogCacheHolder(LogCacheFileDateTimeHolder.class).getCacheRange(dateTimeStart, dateTimeEnd);
+        logEntries.sort(Comparator.comparingLong(LogEntry::getId));
+        return logEntries;
+    }
 
 }

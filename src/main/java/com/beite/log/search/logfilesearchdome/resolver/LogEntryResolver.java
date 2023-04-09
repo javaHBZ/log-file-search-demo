@@ -34,7 +34,7 @@ public class LogEntryResolver {
         LogEntryResolver.LOG_CACHE_HOLDER_MAP = ehcacheBuild.buildLogCacheHolderMap();
     }
 
-    public static LogEntry resolverLine(String line) {
+    public static LogEntry resolverLine(String filePath, String fileName, String line) {
         if (!StringUtils.hasText(line)) {
             return null;
         }
@@ -58,17 +58,36 @@ public class LogEntryResolver {
             Date date = DateTransUtils.transString2Date(datetime, DateTransUtils.DATE_TIME_PATTERN_MIL);
             String dateStr = DateTransUtils.convertTime2String(date, DateTransUtils.DATE_PATTERN);
             String timeStr = DateTransUtils.convertTime2String(date, DateTransUtils.TIME_PATTERN);
-            logCacheFileDateHolder.putCache(dateStr, new LogEntry(dateStr, timeStr, datetime, level, logger, message));
-            logCacheFileDateTimeHolder.putCache(datetime, new LogEntry(dateStr, timeStr, datetime, level, logger, message));
-            logCacheFileLevelHolder.putCache(level, new LogEntry(dateStr, timeStr, datetime, level, logger, message));
+            logCacheFileDateHolder.putCache(dateStr, new LogEntry(filePath + fileName, dateStr, timeStr, datetime, level, logger, message));
+            logCacheFileDateTimeHolder.putCache(datetime, new LogEntry(filePath + fileName, dateStr, timeStr, datetime, level, logger, message));
+            logCacheFileLevelHolder.putCache(level, new LogEntry(filePath + fileName, dateStr, timeStr, datetime, level, logger, message));
         } else {
-            // 如果进入此方法 认为是没有匹配正则表达式,应该是错误消息,这里的逻辑是需要将这个错误消息,更新到最新记录上的消息进行拼接
-            LogEntry latestCacheDate = logCacheFileDateHolder.getLatestCache();
-            latestCacheDate.setMessage(latestCacheDate.getMessage() + "\n" + line);
-            LogEntry latestCacheDateTime = logCacheFileDateTimeHolder.getLatestCache();
-            latestCacheDateTime.setMessage(latestCacheDateTime.getMessage() + "\n" + line);
-            LogEntry latestCacheLevel = logCacheFileLevelHolder.getLatestCache();
-            latestCacheLevel.setMessage(latestCacheLevel.getMessage() + "\n" + line);
+            // 如果进入此方法 可能是普通消息(即没有带traceId的消息)或者是跟随上一条的错误消息
+            String patternStr1 = "\\[?(?<traceId>[^\\]]*)\\]?\\s(?<datetime>\\d{4}-\\d{2}-\\d{2}\\s\\d{2}:\\d{2}:\\d{2}.\\d{3})\\s\\[(?<thread>[^\\]]+)]\\s(?<level>\\S+)\\s+(?<logger>[^\\s]+)\\s+-\\s+(?<message>.*?(\\{.+\\})?.*)";
+            Pattern pattern1 = Pattern.compile(patternStr1);
+            Matcher matcher1 = pattern1.matcher(line);
+            if (matcher1.matches()) {
+                String traceId = matcher1.group("traceId");
+                String datetime = matcher1.group("datetime");
+                String thread = matcher1.group("thread");
+                String level = matcher1.group("level");
+                String logger = matcher1.group("logger");
+                String message = matcher1.group("message");
+                Date date = DateTransUtils.transString2Date(datetime, DateTransUtils.DATE_TIME_PATTERN_MIL);
+                String dateStr = DateTransUtils.convertTime2String(date, DateTransUtils.DATE_PATTERN);
+                String timeStr = DateTransUtils.convertTime2String(date, DateTransUtils.TIME_PATTERN);
+                logCacheFileDateHolder.putCache(dateStr, new LogEntry(filePath + fileName, dateStr, timeStr, datetime, level, logger, message));
+                logCacheFileDateTimeHolder.putCache(datetime, new LogEntry(filePath + fileName, dateStr, timeStr, datetime, level, logger, message));
+                logCacheFileLevelHolder.putCache(level, new LogEntry(filePath + fileName, dateStr, timeStr, datetime, level, logger, message));
+            } else {
+                LogEntry latestCacheDate = logCacheFileDateHolder.getLatestCache();
+                latestCacheDate.setMessage(latestCacheDate.getMessage() + "\n" + line);
+                LogEntry latestCacheDateTime = logCacheFileDateTimeHolder.getLatestCache();
+                latestCacheDateTime.setMessage(latestCacheDateTime.getMessage() + "\n" + line);
+                LogEntry latestCacheLevel = logCacheFileLevelHolder.getLatestCache();
+                latestCacheLevel.setMessage(latestCacheLevel.getMessage() + "\n" + line);
+            }
+
         }
 
         return null;

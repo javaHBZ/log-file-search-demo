@@ -1,52 +1,76 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<ehcache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:noNamespaceSchemaLocation="http://www.ehcache.org/ehcache.xsd"
-         updateCheck="false"
-         monitoring="autodetect"
-         dynamicConfig="true">
-<!--    name:缓存名称。
-maxElementsInMemory：缓存最大个数。
-eternal:对象是否永久有效，一但设置了，timeout将不起作用。
-timeToIdleSeconds：设置对象在失效前的允许闲置时间（单位：秒）。仅当eternal=false对象不是永久有效时使用，可选属性，默认值是0，也就是可闲置时间无穷大。
-timeToLiveSeconds：设置对象在失效前允许存活时间（单位：秒）。最大时间介于创建时间和失效时间之间。仅当eternal=false对象不是永久有效时使用，默认是0.，也就是对象存活时间无穷大。
-overflowToDisk：当内存中对象数量达到maxElementsInMemory时，Ehcache将会对象写到磁盘中。
-diskSpoolBufferSizeMB：这个参数设置DiskStore（磁盘缓存）的缓存区大小。默认是30MB。每个Cache都应该有自己的一个缓冲区。
-maxElementsOnDisk：硬盘最大缓存个数。
-diskPersistent：是否缓存虚拟机重启期数据。
-diskExpiryThreadIntervalSeconds：磁盘失效线程运行时间间隔，默认是120秒。
-memoryStoreEvictionPolicy：当达到maxElementsInMemory限制时，Ehcache将会根据指定的策略去清理内存。默认策略是LRU（最近最少使用）。你可以设置为FIFO（先进先出）或是LFU（较少使用）。
-clearOnFlush：内存数量最大时是否清除。
-diskStore 则表示临时缓存的硬盘目录。。-->
-    <cache
-            name ='fileDateCache'
-            maxElementsInMemory="100000"
-            eternal="true"
-            timeToIdleSeconds="120"
-            timeToLiveSeconds="120"
-            overflowToDisk="true"
-            diskPersistent="true"
-            diskExpiryThreadIntervalSeconds="120"
-    />
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.ehcache.org/v3"
+        xsi:schemaLocation="http://www.ehcache.org/v3 http://www.ehcache.org/schema/ehcache-core-3.9.xsd">
 
-    <cache
-            name ='fileDateTimeCache'
-            maxElementsInMemory="100000"
-            eternal="true"
-            timeToIdleSeconds="120"
-            timeToLiveSeconds="120"
-            overflowToDisk="true"
-            diskPersistent="true"
-            diskExpiryThreadIntervalSeconds="120"
-    />
+    <persistence  directory="D:\ehcachedata"/>
 
-    <cache
-            name ='fileLevelCache'
-            maxElementsInMemory="100000"
-            eternal="true"
-            timeToIdleSeconds="120"
-            timeToLiveSeconds="120"
-            overflowToDisk="true"
-            diskPersistent="true"
-            diskExpiryThreadIntervalSeconds="120"
-    />
-</ehcache>
+    <cache alias="fileDateCache">
+        <key-type>java.lang.String</key-type>
+        <value-type>com.beite.log.search.logfilesearchdome.model.LogEntry</value-type>
+        <expiry>
+            <ttl unit="hours">72</ttl>
+        </expiry>
+        <resources>
+            <disk persistent="true" unit="MB" >200</disk>
+            <heap unit="entries">100000</heap>
+            <offheap unit="MB">100</offheap>
+        </resources>
+        <disk-store-settings writer-concurrency="1" thread-pool="50" disk-segments="16"/>
+    </cache>
+
+    <cache alias="fileDateTimeCache">
+        <key-type>java.lang.String</key-type>
+        <value-type>com.beite.log.search.logfilesearchdome.model.LogEntry</value-type>
+        <expiry>
+            <ttl unit="hours">72</ttl>
+        </expiry>
+        <resources>
+            <disk persistent="true" unit="MB">200</disk>
+            <heap unit="entries">100000</heap>
+            <offheap unit="MB">100</offheap>
+        </resources>
+        <disk-store-settings writer-concurrency="1" thread-pool="50" disk-segments="16"/>
+    </cache>
+
+    <cache alias="fileLevelCache">
+        <key-type>java.lang.String</key-type>
+        <value-type>com.beite.log.search.logfilesearchdome.model.LogEntry</value-type>
+        <expiry>
+            <ttl unit="hours">72</ttl>
+        </expiry>
+        <resources>
+            <disk persistent="true" unit="MB">200</disk>
+            <heap unit="entries">100000</heap>
+            <offheap unit="MB">100</offheap>
+        </resources>
+        <disk-store-settings writer-concurrency="1" thread-pool="50" disk-segments="16"/>
+    </cache>
+
+    <cache alias="fileOffsetCache">
+        <key-type>java.lang.String</key-type>
+        <value-type>java.lang.Long</value-type>
+        <expiry>
+            <ttl unit="hours">72</ttl>
+        </expiry>
+        <resources>
+            <disk persistent="true" unit="MB" >20</disk>
+            <heap unit="entries">100000</heap>
+            <offheap unit="MB">10</offheap>
+        </resources>
+        <disk-store-settings writer-concurrency="1" thread-pool="10" disk-segments="8"/>
+    </cache>
+
+    <cache alias="fileMaxIdCache">
+        <key-type>java.lang.String</key-type>
+        <value-type>java.lang.Long</value-type>
+        <expiry>
+            <ttl unit="hours">72</ttl>
+        </expiry>
+        <resources>
+            <disk persistent="true" unit="MB" >10</disk>
+            <heap unit="entries">100000</heap>
+            <offheap unit="MB">5</offheap>
+        </resources>
+        <disk-store-settings writer-concurrency="1" thread-pool="10" disk-segments="4"/>
+    </cache>
+</config>

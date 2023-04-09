@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>日志分析器</title>
+
+    <!-- import Element UI StyleFile -->
+    <link rel="stylesheet" th:href="@{/element-ui/index.css}">
+
+    <!-- import Vue before Element -->
+    <script th:src="@{/vue/vue.js}"></script>
+    <!-- import JavaScript -->
+    <script th:src="@{/element-ui/index.js}"></script>
+    <!-- import socket -->
+    <script th:src="@{/socket/socket.io.min.js}"></script>
+</head>
+<body>
+<div id="app">
+    <div class="infinite-list-wrapper" style="overflow:auto">
+        <el-container>
+            <el-header>实时日志滚动</el-header>
+            <el-main>
+                <div class="scroll-container">
+                    <ul>
+                        <li style="list-style: none;" v-for="message in logMessage">
+                                                                  <pre v-html="message">
+                                                                                                    </pre>
+                        </li>
+                    </ul>
+                </div>
+            </el-main>
+            <el-footer>Footer</el-footer>
+        </el-container>
+    </div>
+</div>
+</body>
+
+<script>
+    new Vue({
+        el: '#app',
+        data() {
+            return {
+                count: 0,
+                logMessage: []
+            }
+        },
+        methods: {
+            loadSocket() {
+                let this_ = this;
+                const url = 'ws://localhost:8080/logFileHandler';
+                const socket = new WebSocket(url);
+
+                socket.onopen = function (event) {
+                    console.log("WebSocket connection established.");
+                };
+
+                socket.onmessage = function (event) {
+                    let data = event.data;
+                    this_.logMessage.push(data);
+
+                    // 自动滚动到底部
+                    this_.$nextTick(() => {
+                        const container = document.querySelector('.scroll-container')
+                        container.scrollTop = container.scrollHeight
+                    });
+                };
+
+                // sendBtn.onclick = function(event) {
+                //     const message = messageInput.value;
+                //     socket.send(message);
+                //     messageInput.value = "";
+                //     log("Sent message: " + message);
+                // };
+            }
+        },
+        mounted() {
+            this.loadSocket();
+        }
+    })
+</script>
+
+<style>
+
+    .el-header, .el-footer {
+        background-color: #B3C0D1;
+        color: #333;
+        text-align: center;
+        line-height: 60px;
+    }
+
+    .el-aside {
+        background-color: #D3DCE6;
+        color: #333;
+        text-align: center;
+        line-height: 200px;
+    }
+
+    .el-main {
+        background-color: #E9EEF3;
+        color: #333;
+    }
+
+    body > .el-container {
+        margin-bottom: 40px;
+    }
+
+    .el-container:nth-child(5) .el-aside,
+    .el-container:nth-child(6) .el-aside {
+        line-height: 260px;
+    }
+
+    .el-container:nth-child(7) .el-aside {
+        line-height: 320px;
+    }
+
+
+    .scroll-container {
+        overflow-y: scroll; /* 显示滚动条 */
+        height: 500px; /* 指定容器高度 */
+    }
+
+    /* 自定义滚动条样式 */
+    .scroll-container::-webkit-scrollbar {
+        width: 10px;
+    }
+
+    .scroll-container::-webkit-scrollbar-track {
+        background-color: #f9f9f9;
+    }
+
+    .scroll-container::-webkit-scrollbar-thumb {
+        background-color: #888;
+        border-radius: 5px;
+    }
+
+    .scroll-container::-webkit-scrollbar-thumb:hover {
+        background-color: #555;
+    }
+
+</style>
+</html>

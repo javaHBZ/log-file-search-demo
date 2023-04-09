@@ -1,10 +1,11 @@
 package com.beite.log.search.logfilesearchdome.util;
 
 import com.beite.log.search.logfilesearchdome.model.LogEntry;
-import net.sf.ehcache.Cache;
-import net.sf.ehcache.Element;
+import org.ehcache.Cache;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -17,37 +18,45 @@ import java.util.regex.Pattern;
  */
 @Component
 public class LogCacheFileDateTimeHolder implements LogCacheHolder {
-    private final Cache fileDateTimeCache;
+    private final Cache<String, LogEntry> fileDateTimeCache;
 
-    public LogCacheFileDateTimeHolder(Cache fileDateTimeCache) {
+    private  static String MAX_KEY ;
+
+    public LogCacheFileDateTimeHolder(Cache<String, LogEntry> fileDateTimeCache) {
         this.fileDateTimeCache = fileDateTimeCache;
     }
 
     @Override
     public void putCache(String dateTime, LogEntry logEntry) {
-        this.fileDateTimeCache.put(new Element(dateTime + "_" + logEntry.getId(), logEntry));
+        this.fileDateTimeCache.put(dateTime + "_" + logEntry.getId(), logEntry);
+        MAX_KEY = dateTime + "_" + logEntry.getId();
     }
 
     @Override
     public void removeCache(String dateTime) {
-        Pattern pattern = Pattern.compile("^" + dateTime + "_.*");
-        for (Object key : this.fileDateTimeCache.getKeys()) {
-            if (pattern.matcher(key.toString()).matches()) {
-                this.fileDateTimeCache.remove(key);
-            }
-        }
+
     }
 
     @Override
-    public List<LogEntry> geCache(String dateTime) {
+    public List<LogEntry> getCache(String dateTime) {
         List<LogEntry> searchLogEntry = new ArrayList<>();
-        Pattern pattern = Pattern.compile("^" + dateTime + "_.*");
-        for (Object key : this.fileDateTimeCache.getKeys()) {
-            if (pattern.matcher(key.toString()).matches()) {
-                Element element = this.fileDateTimeCache.get(key);
-                if (element != null) {
-                    searchLogEntry.add((LogEntry) element.getObjectValue());
-                }
+        for (Cache.Entry<String, LogEntry> next : this.fileDateTimeCache) {
+            if (dateTime.equals(next.getValue().getDateTime())) {
+                searchLogEntry.add(next.getValue());
+            }
+        }
+        return searchLogEntry;
+    }
+
+    @Override
+    public List<LogEntry> getCacheRange(String leftBoundaryValue, String rightBoundaryValue) {
+        List<LogEntry> searchLogEntry = new ArrayList<>();
+        LocalDateTime startTime = LocalDateTime.parse(leftBoundaryValue, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS"));
+        LocalDateTime endTime = LocalDateTime.parse(rightBoundaryValue, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS"));
+        for (Cache.Entry<String, LogEntry> next : this.fileDateTimeCache) {
+            LocalDateTime time = LocalDateTime.parse(next.getValue().getDateTime(), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS"));
+            if (time.isAfter(startTime) && time.isBefore(endTime)) {
+                searchLogEntry.add(next.getValue());
             }
         }
         return searchLogEntry;
@@ -55,8 +64,6 @@ public class LogCacheFileDateTimeHolder implements LogCacheHolder {
 
     @Override
     public LogEntry getLatestCache() {
-        List<String> keysWithExpiryCheck = (List<String>) this.fileDateTimeCache.getKeysWithExpiryCheck();
-        String lastKey = keysWithExpiryCheck.get(keysWithExpiryCheck.size() - 1);
-        return (LogEntry) this.fileDateTimeCache.get(lastKey).getObjectValue();
+        return this.fileDateTimeCache.get(MAX_KEY);
     }
 }

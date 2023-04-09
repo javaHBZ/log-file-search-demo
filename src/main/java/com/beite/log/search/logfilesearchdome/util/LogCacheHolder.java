@@ -15,7 +15,9 @@ public interface LogCacheHolder {
 
     void removeCache(String key);
 
-    List<LogEntry> geCache(String key);
+    List<LogEntry> getCache(String key);
+
+    List<LogEntry> getCacheRange(String leftBoundaryValue, String rightBoundaryValue);
 
     LogEntry getLatestCache();
 }

@@ -31,17 +31,16 @@
 			<version>2.0.3</version>
 		</dependency>
 
-		<!-- 启动SpringBoot缓存框架 -->
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-cache</artifactId>
-		</dependency>
-
 		<!-- ehcache依赖-->
 		<dependency>
-			<groupId>net.sf.ehcache</groupId>
+			<groupId>org.ehcache</groupId>
 			<artifactId>ehcache</artifactId>
-			<version>2.10.9.2</version>
+			<version>3.9.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>javax.cache</groupId>
+			<artifactId>cache-api</artifactId>
 		</dependency>
 
 		<dependency>
@@ -64,6 +63,22 @@
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 			<version>1.18.26</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-websocket</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-thymeleaf</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-text</artifactId>
+			<version>1.9</version>
 		</dependency>
 
 	</dependencies>

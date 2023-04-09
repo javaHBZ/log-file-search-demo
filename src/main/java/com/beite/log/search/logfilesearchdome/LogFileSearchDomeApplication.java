@@ -10,7 +10,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.stereotype.Component;
 
 
-@EnableCaching
 @EnableScheduling
 @SpringBootApplication
 public class LogFileSearchDomeApplication {

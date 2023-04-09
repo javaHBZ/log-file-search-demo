@@ -1,6 +1,7 @@
 package com.beite.log.search.logfilesearchdome.util;
 
-import net.sf.ehcache.Cache;
+import com.beite.log.search.logfilesearchdome.model.LogEntry;
+import org.ehcache.Cache;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -23,7 +24,7 @@ public class EhcacheBuild {
 
     @Autowired
     @Qualifier("fileDateCache")
-    private Cache fileDateCache;
+    private Cache<String, LogEntry> fileDateCache;
 
     public LogCacheHolder buildLogCacheHolder(Class<? extends LogCacheHolder> clazz) {
         Iterator<LogCacheHolder> iterator = cacheProvider.stream().iterator();

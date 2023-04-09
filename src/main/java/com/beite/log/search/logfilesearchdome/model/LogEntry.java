@@ -1,5 +1,8 @@
 package com.beite.log.search.logfilesearchdome.model;
 
+import com.beite.log.search.logfilesearchdome.LogFileSearchDomeApplication;
+import org.ehcache.Cache;
+
 import java.io.Serializable;
 
 /**
@@ -11,12 +14,10 @@ import java.io.Serializable;
 public class LogEntry implements Serializable {
     private static final long serialVersionUID = -6849794470754669918L;
 
-    private static int nextId = 0; // 日志项ID自增值
-
     /**
      * 日志ID
      */
-    private int id;
+    private Long id;
 
     /**
      * 行号
@@ -53,8 +54,17 @@ public class LogEntry implements Serializable {
      */
     private String message;
 
-    public LogEntry(String date, String time,String dateTime, String level, String fullyQualifiedClassName, String message) {
-        this.id = nextId++;
+    public LogEntry(String fileName,String date, String time,String dateTime, String level, String fullyQualifiedClassName, String message) {
+        Cache<String,Long> fileMaxIdCache = LogFileSearchDomeApplication.SpringContextUtil.getBean("fileMaxIdCache", Cache.class);
+        Long maxId = fileMaxIdCache.get(fileName);
+        if (maxId == null) {
+            maxId = 1L;
+        } else {
+            maxId++;
+        }
+
+        fileMaxIdCache.put(fileName, maxId);
+        this.id = maxId;
         this.date = date;
         this.time = time;
         this.dateTime = dateTime;
@@ -64,7 +74,7 @@ public class LogEntry implements Serializable {
     }
 
 
-    public LogEntry(int id, String lineNo, String date, String time, String level, String fullyQualifiedClassName, String message) {
+    public LogEntry(Long id, String lineNo, String date, String time, String level, String fullyQualifiedClassName, String message) {
         this.id = id;
         this.lineNo = lineNo;
         this.date = date;
@@ -74,19 +84,12 @@ public class LogEntry implements Serializable {
         this.message = message;
     }
 
-    public static int getNextId() {
-        return nextId;
-    }
 
-    public static void setNextId(int nextId) {
-        LogEntry.nextId = nextId;
-    }
-
-    public int getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Long id) {
         this.id = id;
     }
 

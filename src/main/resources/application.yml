@@ -1,12 +1,15 @@
-#log:
-#  log-path: C:\project\hs_mes\log
 log:
-  log-path: /Volumes/工作/工作/项目/hs-mes-backend/C:/project/hs_mes/log
-
-spring:
-  cache:
-    ehcache:
-      config: classpath:ehcache.xml
-    type: ehcache
+  log-path: C:\project\hs_mes\log
+#log:
+#  log-path: /Volumes/工作/工作/项目/hs-mes-backend/C:/project/hs_mes/log
 
 debug: true
+
+# thymeleaf模板引擎
+spring:
+  thymeleaf:
+    cache: false
+    prefix: classpath:/templates/
+    mode: HTML5
+    encoding: UTF-8
+    suffix: .html
