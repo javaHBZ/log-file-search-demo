@@ -65,6 +65,7 @@ public class LogFileController {
         logEntries.sort(Comparator.comparingLong(LogEntry::getId));
         StringBuilder resultMessage = new StringBuilder();
         logEntries.forEach(item -> {
+            System.out.println(item.toString().getBytes().length);
             resultMessage.append(item.toString());
         });
 

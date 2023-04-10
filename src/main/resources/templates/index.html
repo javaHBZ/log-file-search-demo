@@ -16,7 +16,7 @@
     <!--  import axios  -->
     <script th:src="@{/axios/axios.min.js}"></script>
 </head>
-<body>
+<body th:data-context-path="${servletContext.contextPath}">
 <div id="app">
     <div class="infinite-list-wrapper" style="overflow:auto">
         <el-container>
@@ -68,6 +68,40 @@
                                 </el-date-picker>
                             </el-form-item>
 
+                            <el-form-item label="日志等级" v-if="logSelectRadio == 3">
+                                <el-select v-model="formInline.levelValue" filterable placeholder="请选择">
+                                    <el-option
+                                            v-for="item in logLevelOptions"
+                                            :key="item.value"
+                                            :label="item.label"
+                                            :value="item.value">
+                                    </el-option>
+                                </el-select>
+                                <el-date-picker
+                                        v-model="formInline.levelDateRange"
+                                        type="datetimerange"
+                                        :picker-options="pickerOptionsRange"
+                                        range-separator="至"
+                                        start-placeholder="开始日期"
+                                        end-placeholder="结束日期"
+                                        align="right"
+                                        value-format="yyyy-MM-dd HH:mm:ss">
+                                </el-date-picker>
+
+                                <el-tooltip placement="top">
+                                    <div slot="content">
+                                        TRACE（追踪）：最低级别，一般用于记录一些调试信息，表示追踪代码执行过程；</br>
+                                        DEBUG（调试）：用于记录详细的调试信息，一般用于排查问题，可在开发阶段输出；</br>
+                                        INFO（信息）：用于记录程序运行时的重要信息，例如启动信息、请求方法和处理时间等，通常会输出到控制台和日志文件中；</br>
+                                        WARN（警告）：用于记录可能会导致程序出现错误或异常的情况，例如方法参数不匹配、缺失资源等，通常会输出到控制台和日志文件中；</br>
+                                        ERROR（错误）：用于记录错误信息，例如空指针、数据库异常等，通常会输出到控制台和日志文件中；</br>
+                                        FATAL（致命）：最高级别，用于记录严重的错误信息，例如应用程序无法启动、系统崩溃等，通常会输出到控制台和日志文件中，并且可能会触发警报机制；</br>
+                                        OFF（关闭）：关闭日志记录。
+                                    </div>
+                                    <el-button>日志级别提示</el-button>
+                                </el-tooltip>
+                            </el-form-item>
+
                             <el-form-item>
                                 <el-button type="primary" @click="onSubmit">查询</el-button>
                             </el-form-item>
@@ -100,7 +134,9 @@
 
                 formInline: {
                     date: '',
-                    dateRange: ''
+                    dateRange: '',
+                    levelDateRange: '',
+                    levelValue: ''
                 },
                 logSelectRadio: '1',
                 pickerOptions: {
@@ -155,14 +191,41 @@
                         }
                     }]
                 },
-                logSelectMessage: ''
+                logSelectMessage: '',
+                logLevelOptions: [{
+                    value: 'TRACE',
+                    label: 'TRACE'
+                }, {
+                    value: 'DEBUG',
+                    label: 'DEBUG'
+                }, {
+                    value: 'INFO',
+                    label: 'INFO'
+                }, {
+                    value: 'WARN',
+                    label: 'WARN'
+                }, {
+                    value: 'ERROR',
+                    label: 'ERROR'
+                }, {
+                    value: 'FATAL',
+                    label: 'FATAL'
+                },{
+                    value: 'OFF',
+                    label: 'OFF'
+                }]
             }
         },
         methods: {
             onSubmit() {
                 let this_ = this;
+
                 if (this.logSelectRadio === '1') {
-                    axios.get('http://localhost:8080/v1/log_file/search_date?date=' + this.formInline.date) // 发起GET请求
+                    const httpProtocol = location.protocol;
+                    const contextPath = document.body.getAttribute('data-context-path');
+                    const httpPath = `${contextPath}/v1/log_file/search_date`;
+                    const httpUrl = `${httpProtocol}//${location.hostname}:8080${httpPath}`;
+                    axios.get(httpUrl + '?date=' + this.formInline.date) // 发起GET请求
                         .then(function (response) { // 处理响应数据
                             this_.logSelectMessage = response.data;
                         })
@@ -172,7 +235,25 @@
                 }
 
                 if (this.logSelectRadio === '2') {
-                    axios.get('http://localhost:8080/v1/log_file/search_date_time_range?dateTimeStart=' + this_.formInline.dateRange[0] + "&dateTimeEnd=" + this_.formInline.dateRange[1]) // 发起GET请求
+                    const httpProtocol = location.protocol;
+                    const contextPath = document.body.getAttribute('data-context-path');
+                    const httpPath = `${contextPath}/v1/log_file/search_date_time_range`;
+                    const httpUrl = `${httpProtocol}//${location.hostname}:8080${httpPath}`;
+                    axios.get(httpUrl + '?dateTimeStart=' + this_.formInline.dateRange[0] + "&dateTimeEnd=" + this_.formInline.dateRange[1]) // 发起GET请求
+                        .then(function (response) { // 处理响应数据
+                            this_.logSelectMessage = response.data;
+                        })
+                        .catch(function (error) { // 处理错误情况
+                            console.error(error);
+                        });
+                }
+
+                if (this.logSelectRadio === '3') {
+                    const httpProtocol = location.protocol;
+                    const contextPath = document.body.getAttribute('data-context-path');
+                    const httpPath = `${contextPath}/v1/log_file/search_level_date_time_range`;
+                    const httpUrl = `${httpProtocol}//${location.hostname}:8080${httpPath}`;
+                    axios.get(httpUrl + '?dateTimeStart=' + this_.formInline.levelDateRange[0] + "&dateTimeEnd=" + this_.formInline.levelDateRange[1] + "&level=" + this_.formInline.levelValue) // 发起GET请求
                         .then(function (response) { // 处理响应数据
                             this_.logSelectMessage = response.data;
                         })
@@ -190,8 +271,11 @@
             },
             loadSocket() {
                 let this_ = this;
-                const url = 'ws://localhost:8080/logFileHandler';
-                this_.socket = new WebSocket(url);
+                const wsProtocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+                const contextPath = document.body.getAttribute('data-context-path');  // 使用 document.body.getAttribute 获取 Web 应用的上下文路径
+                const wsPath = `${contextPath}/logFileHandler`;
+                const wsUrl = `${wsProtocol}//${location.hostname}:8080${wsPath}`;  // 拼接 WebSocket 请求的路由路径
+                this_.socket = new WebSocket(wsUrl);
 
                 this_.socket.onopen = function (event) {
                     console.log("WebSocket connection established.");
