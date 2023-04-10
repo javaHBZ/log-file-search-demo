@@ -13,21 +13,75 @@
     <script th:src="@{/element-ui/index.js}"></script>
     <!-- import socket -->
     <script th:src="@{/socket/socket.io.min.js}"></script>
+    <!--  import axios  -->
+    <script th:src="@{/axios/axios.min.js}"></script>
 </head>
 <body>
 <div id="app">
     <div class="infinite-list-wrapper" style="overflow:auto">
         <el-container>
-            <el-header>实时日志滚动</el-header>
+            <el-header>日志监控平台</el-header>
             <el-main>
-                <div class="scroll-container">
-                    <ul>
-                        <li style="list-style: none;" v-for="message in logMessage">
+                <el-tabs v-model="activeName" @tab-click="handleClick">
+                    <el-tab-pane label="日志实时滚动" name="first">
+                        <el-button type="primary" @click="socketClose" plain>暂停</el-button>
+                        <el-button type="primary" @click="loadSocket" plain>继续</el-button>
+                        <div class="scroll-container">
+                            <ul>
+                                <li style="list-style: none;" v-for="message in logMessage">
                                                                   <pre v-html="message">
                                                                                                     </pre>
-                        </li>
-                    </ul>
-                </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </el-tab-pane>
+
+                    <el-tab-pane label="日志信息查询" name="second">
+                        <div style="margin-top: 20px">
+                            <el-radio v-model="logSelectRadio" label="1" border size="medium">日期</el-radio>
+                            <el-radio v-model="logSelectRadio" label="2" border size="medium">日期时间范围</el-radio>
+                            <el-radio v-model="logSelectRadio" label="3" border size="medium">日志等级+时间范围</el-radio>
+                        </div>
+                        <el-form :inline="true" :model="formInline" class="demo-form-inline">
+                            <el-form-item label="日期" v-if="logSelectRadio == 1">
+                                    <el-date-picker
+                                            v-model="formInline.date"
+                                            align="right"
+                                            type="date"
+                                            placeholder="选择日期"
+                                            :picker-options="pickerOptions"
+                                            format="yyyy 年 MM 月 dd 日"
+                                            value-format="yyyy-MM-dd">
+                                    </el-date-picker>
+                            </el-form-item>
+
+                            <el-form-item label="日期时间范围" v-if="logSelectRadio == 2">
+                                <el-date-picker
+                                        v-model="formInline.dateRange"
+                                        type="datetimerange"
+                                        :picker-options="pickerOptionsRange"
+                                        range-separator="至"
+                                        start-placeholder="开始日期"
+                                        end-placeholder="结束日期"
+                                        align="right"
+                                        value-format="yyyy-MM-dd HH:mm:ss">
+                                </el-date-picker>
+                            </el-form-item>
+
+                            <el-form-item>
+                                <el-button type="primary" @click="onSubmit">查询</el-button>
+                            </el-form-item>
+                        </el-form>
+                        <div class="scroll-container">
+                            <ul>
+                                <li style="list-style: none;">
+                                                                  <pre v-html="logSelectMessage">
+                                                                                                    </pre>
+                                </li>
+                            </ul>
+                        </div>
+                    </el-tab-pane>
+                </el-tabs>
             </el-main>
             <el-footer>Footer</el-footer>
         </el-container>
@@ -40,21 +94,110 @@
         el: '#app',
         data() {
             return {
-                count: 0,
-                logMessage: []
+                activeName: 'first',
+                logMessage: [],
+                socket: null,
+
+                formInline: {
+                    date: '',
+                    dateRange: ''
+                },
+                logSelectRadio: '1',
+                pickerOptions: {
+                    disabledDate(time) {
+                        return time.getTime() > Date.now();
+                    },
+                    shortcuts: [{
+                        text: '今天',
+                        onClick(picker) {
+                            picker.$emit('pick', new Date());
+                        }
+                    }, {
+                        text: '昨天',
+                        onClick(picker) {
+                            const date = new Date();
+                            date.setTime(date.getTime() - 3600 * 1000 * 24);
+                            picker.$emit('pick', date);
+                        }
+                    }, {
+                        text: '一周前',
+                        onClick(picker) {
+                            const date = new Date();
+                            date.setTime(date.getTime() - 3600 * 1000 * 24 * 7);
+                            picker.$emit('pick', date);
+                        }
+                    }]
+                },
+                pickerOptionsRange: {
+                    shortcuts: [{
+                        text: '最近一周',
+                        onClick(picker) {
+                            const end = new Date();
+                            const start = new Date();
+                            start.setTime(start.getTime() - 3600 * 1000 * 24 * 7);
+                            picker.$emit('pick', [start, end]);
+                        }
+                    }, {
+                        text: '最近一个月',
+                        onClick(picker) {
+                            const end = new Date();
+                            const start = new Date();
+                            start.setTime(start.getTime() - 3600 * 1000 * 24 * 30);
+                            picker.$emit('pick', [start, end]);
+                        }
+                    }, {
+                        text: '最近三个月',
+                        onClick(picker) {
+                            const end = new Date();
+                            const start = new Date();
+                            start.setTime(start.getTime() - 3600 * 1000 * 24 * 90);
+                            picker.$emit('pick', [start, end]);
+                        }
+                    }]
+                },
+                logSelectMessage: ''
             }
         },
         methods: {
+            onSubmit() {
+                let this_ = this;
+                if (this.logSelectRadio === '1') {
+                    axios.get('http://localhost:8080/v1/log_file/search_date?date=' + this.formInline.date) // 发起GET请求
+                        .then(function (response) { // 处理响应数据
+                            this_.logSelectMessage = response.data;
+                        })
+                        .catch(function (error) { // 处理错误情况
+                            console.error(error);
+                        });
+                }
+
+                if (this.logSelectRadio === '2') {
+                    axios.get('http://localhost:8080/v1/log_file/search_date_time_range?dateTimeStart=' + this_.formInline.dateRange[0] + "&dateTimeEnd=" + this_.formInline.dateRange[1]) // 发起GET请求
+                        .then(function (response) { // 处理响应数据
+                            this_.logSelectMessage = response.data;
+                        })
+                        .catch(function (error) { // 处理错误情况
+                            console.error(error);
+                        });
+                }
+                },
+            handleClick(tab, event) {
+                console.log(tab, event);
+            },
+            socketClose () {
+                let this_ = this;
+                this_.socket.close();
+            },
             loadSocket() {
                 let this_ = this;
                 const url = 'ws://localhost:8080/logFileHandler';
-                const socket = new WebSocket(url);
+                this_.socket = new WebSocket(url);
 
-                socket.onopen = function (event) {
+                this_.socket.onopen = function (event) {
                     console.log("WebSocket connection established.");
                 };
 
-                socket.onmessage = function (event) {
+                this_.socket.onmessage = function (event) {
                     let data = event.data;
                     this_.logMessage.push(data);
 

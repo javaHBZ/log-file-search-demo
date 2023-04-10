@@ -25,6 +25,16 @@ public class LogEntry implements Serializable {
     private String lineNo;
 
     /**
+     * 调用链跟踪ID
+     */
+    private String traceId;
+
+    /**
+     * 线程名称
+     */
+    private String thread;
+
+    /**
      * 日期
      */
     private String date;
@@ -54,7 +64,7 @@ public class LogEntry implements Serializable {
      */
     private String message;
 
-    public LogEntry(String fileName,String date, String time,String dateTime, String level, String fullyQualifiedClassName, String message) {
+    public LogEntry(String fileName,String traceId,String thread,String date, String time,String dateTime, String level, String fullyQualifiedClassName, String message) {
         Cache<String,Long> fileMaxIdCache = LogFileSearchDomeApplication.SpringContextUtil.getBean("fileMaxIdCache", Cache.class);
         Long maxId = fileMaxIdCache.get(fileName);
         if (maxId == null) {
@@ -65,6 +75,8 @@ public class LogEntry implements Serializable {
 
         fileMaxIdCache.put(fileName, maxId);
         this.id = maxId;
+        this.traceId = traceId;
+        this.thread = thread;
         this.date = date;
         this.time = time;
         this.dateTime = dateTime;
@@ -74,16 +86,18 @@ public class LogEntry implements Serializable {
     }
 
 
-    public LogEntry(Long id, String lineNo, String date, String time, String level, String fullyQualifiedClassName, String message) {
+    public LogEntry(Long id, String lineNo, String traceId, String thread, String date, String time, String dateTime, String level, String fullyQualifiedClassName, String message) {
         this.id = id;
         this.lineNo = lineNo;
+        this.traceId = traceId;
+        this.thread = thread;
         this.date = date;
         this.time = time;
+        this.dateTime = dateTime;
         this.level = level;
         this.fullyQualifiedClassName = fullyQualifiedClassName;
         this.message = message;
     }
-
 
     public Long getId() {
         return id;
@@ -147,5 +161,17 @@ public class LogEntry implements Serializable {
 
     public void setMessage(String message) {
         this.message = message;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("[").append(this.traceId).append("]").append(" ");
+        sb.append(this.dateTime).append(" ");
+        sb.append("[").append(this.thread).append("]").append(" ");
+        sb.append(this.level).append(" ");
+        sb.append(this.fullyQualifiedClassName).append(" ");
+        sb.append(this.message).append("\n");
+        return sb.toString();
     }
 }

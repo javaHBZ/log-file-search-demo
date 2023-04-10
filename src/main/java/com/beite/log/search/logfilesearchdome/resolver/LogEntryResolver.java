@@ -58,9 +58,9 @@ public class LogEntryResolver {
             Date date = DateTransUtils.transString2Date(datetime, DateTransUtils.DATE_TIME_PATTERN_MIL);
             String dateStr = DateTransUtils.convertTime2String(date, DateTransUtils.DATE_PATTERN);
             String timeStr = DateTransUtils.convertTime2String(date, DateTransUtils.TIME_PATTERN);
-            logCacheFileDateHolder.putCache(dateStr, new LogEntry(filePath + fileName, dateStr, timeStr, datetime, level, logger, message));
-            logCacheFileDateTimeHolder.putCache(datetime, new LogEntry(filePath + fileName, dateStr, timeStr, datetime, level, logger, message));
-            logCacheFileLevelHolder.putCache(level, new LogEntry(filePath + fileName, dateStr, timeStr, datetime, level, logger, message));
+            logCacheFileDateHolder.putCache(dateStr, new LogEntry(filePath + fileName, traceId, thread, dateStr, timeStr, datetime, level, logger, message));
+            logCacheFileDateTimeHolder.putCache(datetime, new LogEntry(filePath + fileName, traceId, thread, dateStr, timeStr, datetime, level, logger, message));
+            logCacheFileLevelHolder.putCache(level, new LogEntry(filePath + fileName, traceId, thread, dateStr, timeStr, datetime, level, logger, message));
         } else {
             // 如果进入此方法 可能是普通消息(即没有带traceId的消息)或者是跟随上一条的错误消息
             String patternStr1 = "\\[?(?<traceId>[^\\]]*)\\]?\\s(?<datetime>\\d{4}-\\d{2}-\\d{2}\\s\\d{2}:\\d{2}:\\d{2}.\\d{3})\\s\\[(?<thread>[^\\]]+)]\\s(?<level>\\S+)\\s+(?<logger>[^\\s]+)\\s+-\\s+(?<message>.*?(\\{.+\\})?.*)";
@@ -76,16 +76,22 @@ public class LogEntryResolver {
                 Date date = DateTransUtils.transString2Date(datetime, DateTransUtils.DATE_TIME_PATTERN_MIL);
                 String dateStr = DateTransUtils.convertTime2String(date, DateTransUtils.DATE_PATTERN);
                 String timeStr = DateTransUtils.convertTime2String(date, DateTransUtils.TIME_PATTERN);
-                logCacheFileDateHolder.putCache(dateStr, new LogEntry(filePath + fileName, dateStr, timeStr, datetime, level, logger, message));
-                logCacheFileDateTimeHolder.putCache(datetime, new LogEntry(filePath + fileName, dateStr, timeStr, datetime, level, logger, message));
-                logCacheFileLevelHolder.putCache(level, new LogEntry(filePath + fileName, dateStr, timeStr, datetime, level, logger, message));
+                logCacheFileDateHolder.putCache(dateStr, new LogEntry(filePath + fileName, "", thread, dateStr, timeStr, datetime, level, logger, message));
+                logCacheFileDateTimeHolder.putCache(datetime, new LogEntry(filePath + fileName, "", thread, dateStr, timeStr, datetime, level, logger, message));
+                logCacheFileLevelHolder.putCache(level, new LogEntry(filePath + fileName, "", thread, dateStr, timeStr, datetime, level, logger, message));
             } else {
                 LogEntry latestCacheDate = logCacheFileDateHolder.getLatestCache();
                 latestCacheDate.setMessage(latestCacheDate.getMessage() + "\n" + line);
+                logCacheFileDateHolder.putCache(latestCacheDate.getDate(), latestCacheDate);
+
                 LogEntry latestCacheDateTime = logCacheFileDateTimeHolder.getLatestCache();
                 latestCacheDateTime.setMessage(latestCacheDateTime.getMessage() + "\n" + line);
+                logCacheFileDateTimeHolder.putCache(latestCacheDateTime.getDateTime(), latestCacheDateTime);
+
                 LogEntry latestCacheLevel = logCacheFileLevelHolder.getLatestCache();
                 latestCacheLevel.setMessage(latestCacheLevel.getMessage() + "\n" + line);
+                logCacheFileLevelHolder.putCache(latestCacheLevel.getLevel(), latestCacheLevel);
+
             }
 
         }

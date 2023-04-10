@@ -5,8 +5,6 @@ import com.beite.log.search.logfilesearchdome.resolver.LogEntryResolver;
 import org.apache.commons.text.StringEscapeUtils;
 import org.ehcache.Cache;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -23,7 +21,6 @@ import java.nio.file.WatchEvent;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -66,9 +63,9 @@ public class FileReaderListener implements InitializingBean {
     }
 
     /**
-     * 每天的12点05分刷新一下日志文件的监控,因为新的一天会产生新的日志文件
+     * 每半个小时 检查一次是否产生新的文件了
      */
-    @Scheduled(cron = "0 5 12 * * ?")
+    @Scheduled(cron = "0 0/30 * * * ?")
     public void refreshFileTask() {
         afterPropertiesSet();
     }
@@ -78,10 +75,9 @@ public class FileReaderListener implements InitializingBean {
         File loadMainFile = new File(filePath);
         String[] files = loadMainFile.list();
         if (files != null) {
-            List<String> fileNames = Arrays.asList(files);
 
             List<String> filterFileNames = new ArrayList<>();
-            for (String fileName : fileNames) {
+            for (String fileName : files) {
                 if (!FILE_PATH_STORAGE.contains(fileName)) {
                     FILE_PATH_STORAGE.add(fileName);
                     filterFileNames.add(fileName);

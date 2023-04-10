@@ -8,7 +8,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Pattern;
 
 /**
  * @author beite_he[beite_he@insightfo.cn]
@@ -51,8 +50,8 @@ public class LogCacheFileDateTimeHolder implements LogCacheHolder {
     @Override
     public List<LogEntry> getCacheRange(String leftBoundaryValue, String rightBoundaryValue) {
         List<LogEntry> searchLogEntry = new ArrayList<>();
-        LocalDateTime startTime = LocalDateTime.parse(leftBoundaryValue, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS"));
-        LocalDateTime endTime = LocalDateTime.parse(rightBoundaryValue, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS"));
+        LocalDateTime startTime = LocalDateTime.parse(leftBoundaryValue, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        LocalDateTime endTime = LocalDateTime.parse(rightBoundaryValue, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
         for (Cache.Entry<String, LogEntry> next : this.fileDateTimeCache) {
             LocalDateTime time = LocalDateTime.parse(next.getValue().getDateTime(), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS"));
             if (time.isAfter(startTime) && time.isBefore(endTime)) {

@@ -4,6 +4,8 @@ import com.beite.log.search.logfilesearchdome.model.LogEntry;
 import com.beite.log.search.logfilesearchdome.util.EhcacheBuild;
 import com.beite.log.search.logfilesearchdome.util.LogCacheFileDateHolder;
 import com.beite.log.search.logfilesearchdome.util.LogCacheFileDateTimeHolder;
+import com.beite.log.search.logfilesearchdome.util.LogCacheFileLevelHolder;
+import org.apache.commons.text.StringEscapeUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,25 +28,47 @@ public class LogFileController {
     private EhcacheBuild ehcacheBuild;
 
     @GetMapping("/search_date")
-    public List<LogEntry> searchByDate(@RequestParam("date") String date) {
+    public String searchByDate(@RequestParam("date") String date) {
         List<LogEntry> logEntries = ehcacheBuild.buildLogCacheHolder(LogCacheFileDateHolder.class).getCache(date);
         logEntries.sort(Comparator.comparingLong(LogEntry::getId));
-        return logEntries;
-    }
 
-    @GetMapping("/search_date_time")
-    public List<LogEntry> searchByDateTime(@RequestParam("dateTime") String dateTime) {
-        List<LogEntry> logEntries = ehcacheBuild.buildLogCacheHolder(LogCacheFileDateTimeHolder.class).getCache(dateTime);
-        logEntries.sort(Comparator.comparingLong(LogEntry::getId));
-        return logEntries;
+        StringBuilder resultMessage = new StringBuilder();
+        logEntries.forEach(item -> {
+            resultMessage.append(item.toString());
+        });
+
+        return StringEscapeUtils.escapeHtml4(resultMessage.toString());
     }
 
     @GetMapping("/search_date_time_range")
-    public List<LogEntry> searchByDateTime(@RequestParam("dateTimeStart") String dateTimeStart,
+    public String searchByDateTime(@RequestParam("dateTimeStart") String dateTimeStart,
                                            @RequestParam("dateTimeEnd") String dateTimeEnd) {
         List<LogEntry> logEntries = ehcacheBuild.buildLogCacheHolder(LogCacheFileDateTimeHolder.class).getCacheRange(dateTimeStart, dateTimeEnd);
         logEntries.sort(Comparator.comparingLong(LogEntry::getId));
-        return logEntries;
+
+        StringBuilder resultMessage = new StringBuilder();
+        logEntries.forEach(item -> {
+            resultMessage.append(item.toString());
+        });
+
+        return StringEscapeUtils.escapeHtml4(resultMessage.toString());
+    }
+
+    @GetMapping("/search_level_date_time_range")
+    public String searchByLevelDateTime(@RequestParam("level") String level,
+                                   @RequestParam("dateTimeStart") String dateTimeStart,
+                                   @RequestParam("dateTimeEnd") String dateTimeEnd
+    ){
+        String key = level + "_" + dateTimeStart + "_" + dateTimeEnd;
+        List<LogEntry> logEntries = ehcacheBuild.buildLogCacheHolder(LogCacheFileLevelHolder.class).getCache(key);
+
+        logEntries.sort(Comparator.comparingLong(LogEntry::getId));
+        StringBuilder resultMessage = new StringBuilder();
+        logEntries.forEach(item -> {
+            resultMessage.append(item.toString());
+        });
+
+        return StringEscapeUtils.escapeHtml4(resultMessage.toString());
     }
 
 }

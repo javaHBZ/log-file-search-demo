@@ -4,9 +4,10 @@ import com.beite.log.search.logfilesearchdome.model.LogEntry;
 import org.ehcache.Cache;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Pattern;
 
 /**
  * @author beite_he[beite_he@insightfo.cn]
@@ -39,10 +40,22 @@ public class LogCacheFileLevelHolder implements LogCacheHolder {
     @Override
     public List<LogEntry> getCache(String level) {
         List<LogEntry> searchLogEntry = new ArrayList<>();
+
+        String[] keySplit = level.split("_");
+        String levelStr = keySplit[0];
+        String leftBoundaryValue = keySplit[1];
+        String rightBoundaryValue = keySplit[2];
+
+        LocalDateTime startTime = LocalDateTime.parse(leftBoundaryValue, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        LocalDateTime endTime = LocalDateTime.parse(rightBoundaryValue, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
         for (Cache.Entry<String, LogEntry> next : this.fileLevelCache) {
-            if (level.equals(next.getValue().getLevel())) {
-                searchLogEntry.add(next.getValue());
+            LocalDateTime time = LocalDateTime.parse(next.getValue().getDateTime(), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS"));
+            if (time.isAfter(startTime) && time.isBefore(endTime)) {
+                if (levelStr.equals(next.getValue().getLevel())) {
+                    searchLogEntry.add(next.getValue());
+                }
             }
+
         }
         return searchLogEntry;
     }
