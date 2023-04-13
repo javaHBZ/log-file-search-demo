@@ -1,8 +1,10 @@
 package com.beite.log.search.logfilesearchdome.util;
 
 import com.beite.log.search.logfilesearchdome.model.LogEntry;
+import com.beite.log.search.logfilesearchdome.wapper.IdListWrapper;
 import org.ehcache.Cache;
 import org.ehcache.core.InternalCache;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -20,6 +22,10 @@ import java.util.regex.Pattern;
 public class LogCacheFileDateHolder implements LogCacheHolder {
 
     private final Cache<String, LogEntry> fileDateCache;
+
+
+    @Autowired
+    private Cache<String, IdListWrapper> dateToIdMapCache;
 
     private  static String MAX_KEY ;
 
@@ -40,11 +46,20 @@ public class LogCacheFileDateHolder implements LogCacheHolder {
     @Override
     public List<LogEntry> getCache(String date) {
         List<LogEntry> searchLogEntry = new ArrayList<>();
-        for (Cache.Entry<String, LogEntry> next : this.fileDateCache) {
-            if (date.equals(next.getValue().getDate())) {
-                searchLogEntry.add(next.getValue());
+        IdListWrapper dateIds =dateToIdMapCache.get(date);
+        if (dateIds == null) {
+            return searchLogEntry;
+        }
+
+        List<Long> ids = dateIds.getIds();
+        for (Long dateId : ids) {
+            String cacheKey = date + "_" + dateId;
+            LogEntry logEntry = this.fileDateCache.get(cacheKey);
+            if (logEntry != null) {
+                searchLogEntry.add(logEntry);
             }
         }
+
         return searchLogEntry;
     }
 

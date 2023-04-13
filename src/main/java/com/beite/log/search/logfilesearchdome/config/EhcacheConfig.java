@@ -1,6 +1,7 @@
 package com.beite.log.search.logfilesearchdome.config;
 
 import com.beite.log.search.logfilesearchdome.model.LogEntry;
+import com.beite.log.search.logfilesearchdome.wapper.IdListWrapper;
 import org.ehcache.Cache;
 import org.ehcache.CacheManager;
 import org.ehcache.config.builders.CacheManagerBuilder;
@@ -10,6 +11,8 @@ import org.springframework.context.annotation.Configuration;
 
 import javax.annotation.PreDestroy;
 import java.net.URL;
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
 
@@ -54,6 +57,16 @@ public class EhcacheConfig {
     @Bean
     public Cache<String, Long> fileMaxIdCache(CacheManager cacheManager) {
         return cacheManager.getCache("fileMaxIdCache", String.class, Long.class);
+    }
+
+    @Bean
+    public Cache<String, IdListWrapper> dateToIdMapCache(CacheManager cacheManager) {
+        return cacheManager.getCache("dateToIdMapCache", String.class, IdListWrapper.class);
+    }
+
+   @Bean
+    public Cache<LocalDateTime, IdListWrapper> dateTimeToIdMap(CacheManager cacheManager) {
+        return cacheManager.getCache("dateTimeToIdMap", LocalDateTime.class, IdListWrapper.class);
     }
 
 }

@@ -9,10 +9,13 @@ import com.beite.log.search.logfilesearchdome.util.LogCacheFileLevelHolder;
 import com.beite.log.search.logfilesearchdome.util.LogCacheHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -41,8 +44,6 @@ public class LogEntryResolver {
         LogCacheHolder logCacheFileDateHolder = LOG_CACHE_HOLDER_MAP.get(LogCacheFileDateHolder.class);
         LogCacheHolder logCacheFileDateTimeHolder = LOG_CACHE_HOLDER_MAP.get(LogCacheFileDateTimeHolder.class);
         LogCacheHolder logCacheFileLevelHolder = LOG_CACHE_HOLDER_MAP.get(LogCacheFileLevelHolder.class);
-        // ^\[(?<traceId>[^\]]+)\] (?<time>\S+) \[(?<thread>[^\]]+)\] (?<level>\S+) (?<logger>\S+) - (?<message>.*\{.+?\})$
-        //String regex = "^\\[(.*?)\\]\\s(.*?)\\s(.*?)\\s\\[(.*?)\\]\\s(.*?)\\s(.*)$";
         String patternStr = "\\[(?<traceId>[^\\]]+)]\\s(?<datetime>\\d{4}-\\d{2}-\\d{2}\\s\\d{2}:\\d{2}:\\d{2}.\\d{3})\\s\\[(?<thread>[^\\]]+)]\\s(?<level>\\S+)\\s+(?<logger>[^\\s]+)\\s+-\\s+(?<message>.*?(\\{.+\\})?.*)";
         Pattern pattern = Pattern.compile(patternStr);
         Matcher matcher = pattern.matcher(line);

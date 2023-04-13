@@ -2,6 +2,8 @@ package com.beite.log.search.logfilesearchdome.fileload;
 
 import com.beite.log.search.logfilesearchdome.config.websocket.handler.LogFileHandler;
 import com.beite.log.search.logfilesearchdome.resolver.LogEntryResolver;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.text.StringEscapeUtils;
 import org.ehcache.Cache;
 import org.springframework.beans.factory.InitializingBean;
@@ -35,6 +37,7 @@ import java.util.function.Consumer;
  * @date 2022年05月20日 2:19 PM
  */
 @Component
+@Slf4j
 public class FileReaderListener implements InitializingBean {
 
     @Value("${log.log-path}")
@@ -86,6 +89,7 @@ public class FileReaderListener implements InitializingBean {
             }
 
             for (String fileName : filterFileNames) {
+                // 创建一个线程观察文件
                 new LogFileObserver(filePath, fileName).start();
             }
         }
@@ -132,7 +136,6 @@ public class FileReaderListener implements InitializingBean {
         public void run() {
             try {
                 watcherLog(this.filePath, this.fileName, str -> {
-                    //System.out.println("文件路径:" + filePath + "文件名称:" + fileName + "最新监听值:" + str);
                     try {
                         String escapedMessage = StringEscapeUtils.escapeHtml4(str);
                         FileReaderListener.LOG_FILE_HANDLER.sendMessageToAllClient(escapedMessage);
@@ -158,12 +161,16 @@ public class FileReaderListener implements InitializingBean {
             Paths.get(filePath).register(watchService, StandardWatchEventKinds.ENTRY_CREATE,
                     StandardWatchEventKinds.ENTRY_MODIFY, StandardWatchEventKinds.ENTRY_DELETE);
 
+            String filePathName = filePath + fileName;
+            Cache<String, Long> fileOffsetCache = FileReaderListener.FILE_OFFSET_CACHE;
+
             do {
                 WatchKey key = watchService.take();
                 List<WatchEvent<?>> watchEvents = key.pollEvents();
                 watchEvents.stream().filter(
                         i -> StandardWatchEventKinds.ENTRY_MODIFY == i.kind()
                                 && fileName.equals(((Path) i.context()).getFileName().toString())
+                                && "log".equals(FilenameUtils.getExtension(fileName))
                 ).forEach(i -> {
                     if (i.count() > 1) {
                         // "重复事件"
@@ -174,12 +181,12 @@ public class FileReaderListener implements InitializingBean {
                     StringBuilder str = new StringBuilder();
 
                     // 判断缓存是否已经这个文件的偏移量 如果不存在则设置为0
-                    if (FileReaderListener.FILE_OFFSET_CACHE.get(filePath + fileName) == null) {
-                        FileReaderListener.FILE_OFFSET_CACHE.put(filePath + fileName, 0L);
+                    if (fileOffsetCache.get(filePathName) == null) {
+                        fileOffsetCache.put(filePathName, 0L);
                     }
+
                     // 读取文件
-                    FileReaderListener.FILE_OFFSET_CACHE.put(filePath + fileName, getFileContent(configFile, FileReaderListener.FILE_OFFSET_CACHE.get(filePath + fileName), str));
-                    System.out.println("当前文件的偏移量为===>:" + FileReaderListener.FILE_OFFSET_CACHE.get(filePath + fileName));
+                    FileReaderListener.FILE_OFFSET_CACHE.put(filePath + fileName, getFileContent(configFile, fileOffsetCache.get(filePath + fileName), str));
 
                     if (str.length() != 0) {
                         consumer.accept(str.toString());
@@ -216,12 +223,13 @@ public class FileReaderListener implements InitializingBean {
                     } else {
                         str.append("\n");
                     }
-                    str.append("Line").append(currentLineNumber.get()).append("\t");
-                    str.append(new String(line.getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8));
+                    str.append("Line").append(currentLineNumber.get()).append(" ");
+                    String lineValue = new String(line.getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8);
+                    str.append(lineValue);
                     currentLineNumber.set(currentLineNumber.incrementAndGet());
 
                     // 通过解析器进行解析
-                    LogEntryResolver.resolverLine(this.filePath, this.fileName,new String(line.getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8));
+                    LogEntryResolver.resolverLine(this.filePath, this.fileName, lineValue);
                 }
                 return file.getFilePointer();
             } catch (IOException e) {

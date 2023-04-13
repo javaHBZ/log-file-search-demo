@@ -1,9 +1,15 @@
 package com.beite.log.search.logfilesearchdome.model;
 
 import com.beite.log.search.logfilesearchdome.LogFileSearchDomeApplication;
+import com.beite.log.search.logfilesearchdome.wapper.IdListWrapper;
 import org.ehcache.Cache;
+import org.springframework.util.CollectionUtils;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author beite_he[beite_he@insightfo.cn]
@@ -74,6 +80,37 @@ public class LogEntry implements Serializable {
         }
 
         fileMaxIdCache.put(fileName, maxId);
+
+        Cache<String, IdListWrapper> dateToIdMapCache =  LogFileSearchDomeApplication.SpringContextUtil.getBean("dateToIdMapCache", Cache.class);
+        IdListWrapper idListWrapper = dateToIdMapCache.get(date);
+        List<Long> dateIdList;
+        if (idListWrapper == null) {
+            dateIdList = new ArrayList<>();
+            dateIdList.add(maxId);
+            idListWrapper = new IdListWrapper(dateIdList);
+            dateToIdMapCache.put(date, idListWrapper);
+        } else {
+            List<Long> wrapperIds = idListWrapper.getIds();
+            wrapperIds.add(maxId);
+            dateToIdMapCache.put(date, idListWrapper);
+        }
+
+        Cache<LocalDateTime, IdListWrapper> dateTimeToIdMap =  LogFileSearchDomeApplication.SpringContextUtil.getBean("dateTimeToIdMap", Cache.class);
+        LocalDateTime localDateTime = LocalDateTime.parse(dateTime, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS"));
+        IdListWrapper dateTimeIdListWrapper = dateTimeToIdMap.get(localDateTime);
+        List<Long> dateTimeIdList;
+        if (dateTimeIdListWrapper == null) {
+            dateTimeIdList = new ArrayList<>();
+            dateTimeIdList.add(maxId);
+            dateTimeIdListWrapper = new IdListWrapper(dateTimeIdList);
+            dateTimeToIdMap.put(localDateTime, dateTimeIdListWrapper);
+        } else {
+            List<Long> wrapperIds = dateTimeIdListWrapper.getIds();
+            wrapperIds.add(maxId);
+            dateTimeToIdMap.put(localDateTime, dateTimeIdListWrapper);
+        }
+
+
         this.id = maxId;
         this.traceId = traceId;
         this.thread = thread;
