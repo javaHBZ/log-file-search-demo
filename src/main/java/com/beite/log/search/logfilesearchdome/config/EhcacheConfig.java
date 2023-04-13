@@ -3,13 +3,7 @@ package com.beite.log.search.logfilesearchdome.config;
 import com.beite.log.search.logfilesearchdome.model.LogEntry;
 import org.ehcache.Cache;
 import org.ehcache.CacheManager;
-import org.ehcache.config.CacheConfiguration;
-import org.ehcache.config.builders.CacheConfigurationBuilder;
 import org.ehcache.config.builders.CacheManagerBuilder;
-import org.ehcache.config.builders.ResourcePoolsBuilder;
-import org.ehcache.impl.serialization.StringSerializer;
-import org.ehcache.shadow.org.terracotta.context.query.QueryBuilder;
-import org.ehcache.spi.serialization.Serializer;
 import org.ehcache.xml.XmlConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -61,7 +55,5 @@ public class EhcacheConfig {
     public Cache<String, Long> fileMaxIdCache(CacheManager cacheManager) {
         return cacheManager.getCache("fileMaxIdCache", String.class, Long.class);
     }
-
-
 
 }

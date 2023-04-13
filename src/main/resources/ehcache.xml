@@ -2,18 +2,29 @@
         xmlns="http://www.ehcache.org/v3"
         xsi:schemaLocation="http://www.ehcache.org/v3 http://www.ehcache.org/schema/ehcache-core-3.9.xsd">
 
-    <persistence  directory="D:\ehcachedata"/>
+    <persistence directory="D:\ehcachedata"/>
 
     <cache alias="fileDateCache">
         <key-type>java.lang.String</key-type>
         <value-type>com.beite.log.search.logfilesearchdome.model.LogEntry</value-type>
         <expiry>
-            <ttl unit="hours">72</ttl>
+            <ttl unit="hours">1</ttl>
         </expiry>
+        <listeners>
+            <listener>
+                <class>com.beite.log.search.logfilesearchdome.config.MyLoggingCacheEventListener</class>
+                <event-firing-mode>ASYNCHRONOUS</event-firing-mode>
+                <event-ordering-mode>UNORDERED</event-ordering-mode>
+                <events-to-fire-on>CREATED</events-to-fire-on>
+                <events-to-fire-on>UPDATED</events-to-fire-on>
+                <events-to-fire-on>EXPIRED</events-to-fire-on>
+                <events-to-fire-on>REMOVED</events-to-fire-on>
+                <events-to-fire-on>EVICTED</events-to-fire-on>
+            </listener>
+        </listeners>
         <resources>
-            <disk persistent="true" unit="GB" >2</disk>
-            <heap unit="entries">1000000</heap>
-            <offheap unit="GB">1</offheap>
+            <disk persistent="true" unit="GB">2</disk>
+            <heap unit="MB">100</heap>
         </resources>
         <disk-store-settings writer-concurrency="5" thread-pool="50" disk-segments="16"/>
     </cache>
@@ -22,12 +33,23 @@
         <key-type>java.lang.String</key-type>
         <value-type>com.beite.log.search.logfilesearchdome.model.LogEntry</value-type>
         <expiry>
-            <ttl unit="hours">72</ttl>
+            <ttl unit="hours">1</ttl>
         </expiry>
+        <listeners>
+            <listener>
+                <class>com.beite.log.search.logfilesearchdome.config.MyLoggingCacheEventListener</class>
+                <event-firing-mode>ASYNCHRONOUS</event-firing-mode>
+                <event-ordering-mode>UNORDERED</event-ordering-mode>
+                <events-to-fire-on>CREATED</events-to-fire-on>
+                <events-to-fire-on>UPDATED</events-to-fire-on>
+                <events-to-fire-on>EXPIRED</events-to-fire-on>
+                <events-to-fire-on>REMOVED</events-to-fire-on>
+                <events-to-fire-on>EVICTED</events-to-fire-on>
+            </listener>
+        </listeners>
         <resources>
             <disk persistent="true" unit="GB">2</disk>
-            <heap unit="entries">1000000</heap>
-            <offheap unit="GB">1</offheap>
+            <heap unit="MB">100</heap>
         </resources>
         <disk-store-settings writer-concurrency="5" thread-pool="50" disk-segments="16"/>
     </cache>
@@ -36,12 +58,23 @@
         <key-type>java.lang.String</key-type>
         <value-type>com.beite.log.search.logfilesearchdome.model.LogEntry</value-type>
         <expiry>
-            <ttl unit="hours">72</ttl>
+            <ttl unit="hours">1</ttl>
         </expiry>
+        <listeners>
+            <listener>
+                <class>com.beite.log.search.logfilesearchdome.config.MyLoggingCacheEventListener</class>
+                <event-firing-mode>ASYNCHRONOUS</event-firing-mode>
+                <event-ordering-mode>UNORDERED</event-ordering-mode>
+                <events-to-fire-on>CREATED</events-to-fire-on>
+                <events-to-fire-on>UPDATED</events-to-fire-on>
+                <events-to-fire-on>EXPIRED</events-to-fire-on>
+                <events-to-fire-on>REMOVED</events-to-fire-on>
+                <events-to-fire-on>EVICTED</events-to-fire-on>
+            </listener>
+        </listeners>
         <resources>
             <disk persistent="true" unit="GB">2</disk>
-            <heap unit="entries">1000000</heap>
-            <offheap unit="GB">1</offheap>
+            <heap unit="MB">100</heap>
         </resources>
         <disk-store-settings writer-concurrency="5" thread-pool="50" disk-segments="16"/>
     </cache>
@@ -50,12 +83,23 @@
         <key-type>java.lang.String</key-type>
         <value-type>java.lang.Long</value-type>
         <expiry>
-            <ttl unit="hours">72</ttl>
+            <ttl unit="hours">1</ttl>
         </expiry>
+        <listeners>
+            <listener>
+                <class>com.beite.log.search.logfilesearchdome.config.MyLoggingCacheEventListener</class>
+                <event-firing-mode>ASYNCHRONOUS</event-firing-mode>
+                <event-ordering-mode>UNORDERED</event-ordering-mode>
+                <events-to-fire-on>CREATED</events-to-fire-on>
+                <events-to-fire-on>UPDATED</events-to-fire-on>
+                <events-to-fire-on>EXPIRED</events-to-fire-on>
+                <events-to-fire-on>REMOVED</events-to-fire-on>
+                <events-to-fire-on>EVICTED</events-to-fire-on>
+            </listener>
+        </listeners>
         <resources>
-            <disk persistent="true" unit="MB" >40</disk>
-            <heap unit="entries">10000</heap>
-            <offheap unit="MB">20</offheap>
+            <disk persistent="true" unit="MB">40</disk>
+            <heap unit="MB">20</heap>
         </resources>
         <disk-store-settings writer-concurrency="1" thread-pool="10" disk-segments="8"/>
     </cache>
@@ -64,12 +108,23 @@
         <key-type>java.lang.String</key-type>
         <value-type>java.lang.Long</value-type>
         <expiry>
-            <ttl unit="hours">72</ttl>
+            <ttl unit="hours">1</ttl>
         </expiry>
+        <listeners>
+            <listener>
+                <class>com.beite.log.search.logfilesearchdome.config.MyLoggingCacheEventListener</class>
+                <event-firing-mode>ASYNCHRONOUS</event-firing-mode>
+                <event-ordering-mode>UNORDERED</event-ordering-mode>
+                <events-to-fire-on>CREATED</events-to-fire-on>
+                <events-to-fire-on>UPDATED</events-to-fire-on>
+                <events-to-fire-on>EXPIRED</events-to-fire-on>
+                <events-to-fire-on>REMOVED</events-to-fire-on>
+                <events-to-fire-on>EVICTED</events-to-fire-on>
+            </listener>
+        </listeners>
         <resources>
-            <disk persistent="true" unit="MB" >40</disk>
-            <heap unit="entries">10000</heap>
-            <offheap unit="MB">20</offheap>
+            <disk persistent="true" unit="MB">40</disk>
+            <heap unit="MB">20</heap>
         </resources>
         <disk-store-settings writer-concurrency="1" thread-pool="10" disk-segments="4"/>
     </cache>
